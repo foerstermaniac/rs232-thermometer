@@ -4,63 +4,37 @@
 #include "stdafx.h"
 #include <stdio.h>
 #include <Windows.h>
+#include <string.h>
+
+
 
 int main(void) {
-	printf("HAllo");
 
-	HANDLE handle;
+	HANDLE hComfile;
 	char buffer[100];
-	DWORD dw;
-	DCB dcb;
+	DCB comConfig;
+	DWORD readBytes;
+	hComfile = CreateFile("COM5", GENERIC_READ, 0, NULL, OPEN_EXISTING, NULL, NULL);
 
-	handle = CreateFile(COM5, FILE_GENERIC_READ | FILE_GENERIC_WRITE, 0, NULL, OPEN_EXISTING, NULL, NULL);
-	if (handle == INVALID_HANDLE_VALUE) {
-		//error
-	}
+	GetCommState(hComfile, &comConfig);
 
-	if (!GetCommState(handle, &dcb)) {
-		//error
-	}
+	comConfig.BaudRate = 9600;
+	comConfig.ByteSize = 7;
+	comConfig.Parity = NOPARITY;
+	comConfig.StopBits = TWOSTOPBITS;
 
-	dcb.BaudRate = CBR_9600;
-	dcb.StopBits = 2;
-	dcb.ByteSize = 7;
+	SetCommState(hComfile, &comConfig);
+	Sleep(4000);
 	
-	if (!SetCommState(handle, &dcb)) {
-		//error
-	}
 
 	while (1) {
-		if (!ReadFile(handle, buffer, 100, &dw, NULL)) {
-			//error
-		}
-
-		if (dw != 100) {
-			//error
-		}
-
-		printf(*buffer);
-		Sleep(500);
-	}
-
-
-
-
-	//hier daten penetrieren
-
-	if (!WriteFile(handle, buffer, 100, &dw, NULL)) {
-		//error
-	}
-
-	if (dw != 100) {
-		//error
-	}
-
-	if (!CloseHandle(handle)) {
-		//error
-	}
-
-
+		ReadFile(hComfile, buffer, 100, &readBytes, NULL);
+		//printf(buffer);
+		//printf("###%u###", readBytes);
+		//memset(buffer, '\0', sizeof(buffer));
+	
+}
+	CloseHandle(hComfile);
 
 	return 0;
 }
